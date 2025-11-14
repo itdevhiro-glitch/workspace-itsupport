@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Zeppelin — User Dashboard</title>
+<link rel="icon" type="image/png" href="D:/Bima Adhitya/Ico/icov2.png" />
+<!-- SDK FIREBASE (LENGKAP) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root{
+    --bg: #f4f7fa; --card: #ffffff; --muted:#6c757d; --text:#212529; --primary:#007bff;
+    --primary-hover:#0069d9; --accent:#58a6ff; --success:#16a34a; --warning: #f59e0b;
+    --danger:#dc3545; --radius: 10px; --border-color: #e9ecef; --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+  }
+  [data-theme="dark"]{
+    --bg:#0f172a; --card:#1e293b; --muted:#94a3b8; --text:#f1f5f9; --primary:#3b82f6;
+    --primary-hover:#2563eb; --border-color: #334155; --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:'Inter', system-ui, Roboto, Arial, sans-serif; background:var(--bg);
+    color:var(--text); padding:24px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  }
+  .app{max-width:1000px;margin:0 auto}
+  header.app-header{
+    display:flex; align-items:center; gap:16px; margin-bottom:24px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .logo{
+    width:48px; height:48px; border-radius:var(--radius);
+    background:linear-gradient(135deg, var(--primary), var(--accent));
+    display:flex; align-items:center; justify-content:center; color:#fff;
+    font-weight:800; font-size:18px;
+  }
+  .title .name{font-size:22px;font-weight:800}
+  .title .tag{font-size:13px;color:var(--muted);font-weight:500;}
+  .controls{margin-left:auto;display:flex;gap:10px;align-items:center}
+  .btn{
+    background:var(--primary); color:#fff; border:none; padding:9px 14px; border-radius:8px;
+    cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:6px;
+    font-size:14px; transition: background-color 0.2s ease; text-decoration: none; line-height: 1;
+  }
+  .btn:hover{ background: var(--primary-hover); }
+  .btn.ghost{ background:transparent; border:1px solid var(--border-color); color:var(--text); font-weight: 500; }
+  .btn.ghost:hover{ background: var(--border-color); }
+  .btn:not(.ghost){ box-shadow: var(--shadow-sm); }
+  .btn svg{width:16px;height:16px;stroke-width:2.5}
+  .card{
+    background:var(--card); padding: 20px 24px; border-radius:var(--radius);
+    box-shadow:var(--shadow-sm); border:1px solid var(--border-color);
+  }
+  h3 { font-size: 18px; font-weight: 700; margin-top: 0; margin-bottom: 16px; }
+  .small{font-size:13px;color:var(--muted);font-weight:500;}
+  .table-wrap{overflow:auto}
+  table{width:100%;border-collapse:collapse;min-width:600px}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border-color);vertical-align: middle;}
+  th{
+    background:var(--bg); color:var(--muted); font-size:12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; position:relative; user-select:none;
+  }
+  .status{
+    display:inline-block; padding: 4px 12px; border-radius:999px;
+    font-weight:600; font-size:12px; line-height: 1.5;
+  }
+  .s-open{background:#fffbeb;color:#b45309}
+  .s-progress{background:#e0f2fe;color:#0284c7}
+  .s-closed{background:#dcfce7;color:#16a34a}
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none;
+    align-items:center; justify-content:center; z-index:9999;
+  }
+  .modal{ width:500px; background:var(--card); padding: 24px; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.35); }
+  input,select,textarea{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color);
+    background:var(--bg); color: var(--text); font-size:14px; font-family:'Inter', system-ui, Roboto, Arial;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+  }
+  textarea{min-height:120px;resize: vertical;}
+  footer.small{ margin-top:32px; text-align:center; color:var(--muted); font-size:13px; }
+  /* (USER) STYLE LOGIN */
+  #loginScreen {
+    position: fixed; inset: 0; background: var(--bg); z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #loginBox {
+    width: 400px; max-width: 90%; background: var(--card); padding: 28px;
+    border-radius: var(--radius); border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+  }
+  #loginBox h3 { text-align: center; }
+  #loginBox form div { margin-top: 10px; }
+  #loginBox input { padding: 12px; }
+  #loginBox button { width: 100%; justify-content: center; padding: 12px; margin-top: 16px; }
+  #loginBox .small { text-align: center; margin-top: 16px; }
+  #loginBox .small a { color: var(--primary); cursor: pointer; text-decoration: underline; }
+  #authError { color: var(--danger); font-size: 13px; text-align: center; margin-top: 10px; display: none; }
+  #registerForm { display: none; }
+  .app-content { display: none; }
+</style>
+</head>
+<body data-theme="light">
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <svg id="icon-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  </defs>
+</svg>
+
+<!-- (USER) LAYAR LOGIN/REGISTRASI -->
+<div id="loginScreen">
+  <div id="loginBox">
+    <form id="loginForm" onsubmit="return false;">
+      <h3>User Login</h3>
+      <div><label class="small">Email</label><input id="loginEmail" type="email" required placeholder="example@zeppelin.center"></div>
+      <div><label class="small">Password</label><input id="loginPass" type="password" required></div>
+      <button id="loginBtn" class="btn">Login</button>
+      <div class="small">Belum punya akun? <a id="showRegister">Registrasi</a></div>
+    </form>
+    
+    <form id="registerForm" onsubmit="return false;">
+      <h3>Registrasi</h3>
+      <div><label class="small">Nama Lengkap Anda</label><input id="regName" type="text" required placeholder="Nama Anda"></div>
+      <div><label class="small">Email</label><input id="regEmail" type="email" required placeholder="example@zeppelin.center"></div>
+      <div><label class="small">Password</label><input id="regPass" type="password" required placeholder="Minimal 6 karakter"></div>
+      <button id="registerBtn" class="btn">Daftar</button>
+      <div class="small">Sudah punya akun? <a id="showLogin">Login</a></div>
+    </form>
+
+    <div id="authError"></div>
+  </div>
+</div>
+
+<!-- (USER) KONTEN APLIKASI -->
+<div class="app app-content">
+  <header class="app-header">
+    <div class="logo">ZP</div>
+    <div class="title"><div class="name">Zeppelin</div><div class="tag">User Dashboard</div></div>
+    <div class="controls">
+      <div id="userInfo" class="small" style="text-align: right;">
+        Selamat datang,<br>
+        <strong id="userNameDisplay"></strong>
+      </div>
+      <button id="logoutBtn" class="btn ghost" title="Logout">Logout</button>
+      <button id="newReportBtn" class="btn">
+        <svg><use href="#icon-plus" /></svg>
+        Buat Laporan
+      </button>
+    </div>
+  </header>
+
+  <main id="mainContent">
+    <div class="card">
+      <h3 class="section-title" style="margin:0;">Laporan Saya</h3>
+      <div class="table-wrap" style="margin-top:12px;">
+        <table id="reportTable" aria-describedby="Daftar laporan saya">
+          <thead>
+            <tr>
+              <th>ID Laporan</th>
+              <th>Jenis Masalah</th>
+              <th>Deskripsi</th>
+              <th>Status</th>
+              <th>Dibuat</th>
+            </tr>
+          </thead>
+          <tbody>
+             <!-- Diisi oleh JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+  <footer class="small">Zeppelin IT Support — <span id="footerDate"></span></footer>
+</div>
+
+<!-- (USER) MODAL BUAT LAPORAN -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modalTitle">Buat Laporan Baru</h3>
+    <form id="modalForm" onsubmit="return false;">
+      <div>
+        <label class="small">Nama Pelapor</label>
+        <input id="m_nama" required readonly> <!-- Diisi otomatis -->
+      </div>
+      <div style="margin-top:10px">
+        <label class="small">Jenis Masalah</label>
+        <select id="m_jenis" required>
+          <option value="">Pilih…</option>
+          <option>Jaringan</option>
+          <option>Hardware</option>
+          <option>Software</option>
+          <option>Login / Akun</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+      <div style="margin-top:10px">
+        <label class="small">Deskripsi Masalah</label>
+        <textarea id="m_catatan" placeholder="Jelaskan masalah Anda di sini..." required></textarea>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button id="modalSave" class="btn">Kirim Laporan</button>
+        <button id="modalCancel" type="button" class="btn ghost">Batal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// === KONFIGURASI FIREBASE ===
+const firebaseConfig = {
+  apiKey: "AIzaSyA9wgSalrlTcveIZi2i-WND86z1i9JYHKw",
+  authDomain: "it-support-53eeb.firebaseapp.com",
+  databaseURL: "https://it-support-53eeb-default-rtdb.firebaseio.com",
+  projectId: "it-support-53eeb",
+  storageBucket: "it-support-53eeb.firebasestorage.app",
+  messagingSenderId: "573924501146",
+  appId: "1:573924501146:web:12f34306ed675472322123",
+  measurementId: "G-33K6DDE1VR"
+};
+
+firebase.initializeApp(firebaseConfig);
+const analytics = firebase.analytics();
+const db = firebase.database();
+const auth = firebase.auth();
+const reportsRef = db.ref('reports'); 
+const counterRef = db.ref('counter'); 
+const usersRef = db.ref('users'); // (BARU) Untuk simpan nama user
+
+/* Cache & State */
+let myReportsCache = []; 
+let currentUser = null; 
+let currentUserData = {}; // (BARU) Untuk simpan nama, dll.
+let dbListenerActive = false; 
+
+/* Utilities */
+function nowString(){ return new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'medium' }); }
+function isoNow(){ return new Date().toISOString(); }
+
+function showToast(txt, t=2500){ const el = document.createElement('div'); el.className='card'; el.style.position='fixed'; el.style.right='18px'; el.style.bottom='18px'; el.style.padding='10px 12px'; el.style.zIndex=99999; el.style.background = 'var(--primary)'; el.style.color = '#fff'; el.textContent = txt; document.body.appendChild(el); setTimeout(()=>el.remove(),t); }
+
+/* (USER) Render Table (Hanya Laporan Sendiri) */
+function renderTable(){
+  const tbody = document.querySelector('#reportTable tbody');
+  
+  // Urutkan berdasarkan terbaru
+  myReportsCache.sort((a,b)=> new Date(b.created_iso) - new Date(a.created_iso));
+  
+  if (myReportsCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">Anda belum membuat laporan.</td></tr>`;
+      return;
+  }
+
+  tbody.innerHTML = myReportsCache.map(r=>{
+    const statusClass = r.status==='Open'?'s-open':(r.status==='Progress'?'s-progress':'s-closed');
+    const created = r.created || '-';
+    
+    // User tidak perlu lihat PIC atau Kategori, hanya status
+    return `<tr>
+      <td>${r.id}</td>
+      <td>${r.jenis}</td>
+      <td>${(r.catatan||'').substring(0, 100)}${ (r.catatan||'').length > 100 ? '...' : ''}</td>
+      <td><span class="status ${statusClass}">${r.status}</span></td>
+      <td>${created}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* Generate ID (Sama) */
+async function generateId() {
+  try {
+    const result = await counterRef.transaction((currentValue) => (currentValue || 0) + 1);
+    if (result.committed) {
+      const nextId = result.snapshot.val();
+      return 'ZP-' + String(nextId).padStart(4, '0');
+    } else { throw new Error('Gagal mendapatkan ID baru (transaksi dibatalkan).'); }
+  } catch (error) {
+    console.error("Gagal generate ID:", error);
+    alert("Error: Tidak bisa mendapatkan ID baru dari server. Coba lagi.");
+    return null;
+  }
+}
+
+/* (USER) Init */
+(function init(){
+  const footerDate = document.getElementById('footerDate');
+  footerDate.textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric' });
+
+  document.getElementById('newReportBtn').addEventListener('click', ()=>openModal());
+  
+  /* (USER) KONTROL OTENTIKASI */
+  const loginScreen = document.getElementById('loginScreen');
+  const appContent = document.querySelector('.app-content');
+  const userNameDisplay = document.getElementById('userNameDisplay');
+  const authError = document.getElementById('authError');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+
+  function showAuthError(msg) {
+    authError.textContent = msg;
+    authError.style.display = 'block';
+  }
+
+  // Tampilkan form
+  document.getElementById('showRegister').addEventListener('click', ()=>{
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+    authError.style.display = 'none';
+  });
+  document.getElementById('showLogin').addEventListener('click', ()=>{
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+    authError.style.display = 'none';
+  });
+  
+  // Handle Login
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPass').value;
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+    } catch (err) {
+      showAuthError(err.message);
+    }
+  });
+  
+  // Handle Registrasi
+  document.getElementById('registerBtn').addEventListener('click', async () => {
+    const email = document.getElementById('regEmail').value;
+    const pass = document.getElementById('regPass').value;
+    const name = document.getElementById('regName').value;
+
+    if (!name) {
+        showAuthError("Nama wajib diisi.");
+        return;
+    }
+    if (pass.length < 6) {
+        showAuthError("Password minimal 6 karakter.");
+        return;
+    }
+
+    try {
+      const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+      // (BARU) Simpan nama user di database
+      await usersRef.child(userCredential.user.uid).set({
+          nama: name,
+          email: email
+      });
+      // Login otomatis ditangani oleh onAuthStateChanged
+    } catch (err) {
+      showAuthError(err.message);
+    }
+  });
+
+  // Handle Logout
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await auth.signOut();
+  });
+
+  /* (USER) LISTENER OTENTIKASI */
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      // User Telah Login
+      currentUser = user;
+      
+      // Ambil data nama user
+      usersRef.child(user.uid).once('value').then(snapshot => {
+          if (snapshot.exists()) {
+              currentUserData = snapshot.val();
+              userNameDisplay.textContent = currentUserData.nama; // Tampilkan nama
+          } else {
+              userNameDisplay.textContent = user.email; // Fallback
+          }
+      });
+      
+      loginScreen.style.display = 'none'; 
+      appContent.style.display = 'block'; 
+      
+      // (USER) Mendengarkan HANYA laporan milik sendiri
+      if (!dbListenerActive) {
+        // Query untuk laporan di mana 'uid' sama dengan uid user
+        const myReportsQuery = reportsRef.orderByChild('uid').equalTo(user.uid);
+        
+        myReportsQuery.on('value', (snapshot) => {
+          const dataObj = snapshot.val();
+          myReportsCache = dataObj ? Object.keys(dataObj).map(key => ({ ...dataObj[key], id: key })) : [];
+          renderTable(); // Render tabel user
+          console.log('Laporan saya dimuat dari Firebase.');
+        }, (error) => {
+          console.error("Firebase read failed:", error);
+          alert("Gagal mengambil data laporan Anda. Periksa rules/koneksi.");
+        });
+        dbListenerActive = true;
+      }
+      
+    } else {
+      // User Telah Logout
+      currentUser = null;
+      currentUserData = {};
+      loginScreen.style.display = 'flex'; 
+      appContent.style.display = 'none'; 
+
+      if (dbListenerActive) {
+        // Matikan listener spesifik tadi
+        const myReportsQuery = reportsRef.orderByChild('uid').equalTo(currentUser?.uid || 'invalid');
+        myReportsQuery.off(); 
+        dbListenerActive = false;
+        myReportsCache = []; 
+      }
+    }
+  });
+})();
+
+/* (USER) MODAL BUAT LAPORAN */
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalForm = document.getElementById('modalForm');
+
+function openModal(){
+  modalForm.reset(); 
+  // Isi nama otomatis
+  document.getElementById('m_nama').value = currentUserData.nama || currentUser.email;
+  modalBackdrop.style.display = 'flex';
+}
+
+document.getElementById('modalCancel').addEventListener('click', ()=>{ modalBackdrop.style.display='none'; });
+
+document.getElementById('modalSave').addEventListener('click', async (e)=>{
+  e && e.preventDefault();
+  
+  if (!currentUser) { alert("Sesi Anda berakhir. Silakan login ulang."); return; }
+  
+  const jenis = document.getElementById('m_jenis').value;
+  const catatan = document.getElementById('m_catatan').value;
+  
+  if(!jenis || !catatan){ alert('Jenis Masalah dan Deskripsi wajib diisi.'); return; }
+
+  const id = await generateId(); 
+  if (!id) return; 
+  
+  const now = nowString();
+  const iso = isoNow();
+
+  const entry = {
+    id: id,
+    uid: currentUser.uid, // (WAJIB) ID Pemilik
+    nama: currentUserData.nama || currentUser.email, // (WAJIB) Nama Pemilik
+    jenis: jenis,
+    catatan: catatan,
+    
+    status: "Open", // (Default)
+    pic: null,       // (Diisi Admin)
+    kategori: null,  // (Diisi Admin)
+    
+    created: now,
+    created_iso: iso,
+    updated: null,
+    updated_iso: null,
+    durationMs: null,
+    durationText: '-',
+    logs: [
+        { time: now, iso: iso, detail: `Laporan dibuat oleh ${currentUserData.nama}.` }
+    ]
+  };
+
+  try {
+    // Firebase Rules akan memvalidasi ini
+    await reportsRef.child(id).set(entry);
+    showToast('Laporan baru berhasil dikirim ✅');
+    modalBackdrop.style.display='none';
+  } catch (err) {
+    console.error("Gagal menyimpan:", err);
+    alert("Gagal mengirim laporan: " + err.message);
+  }
+});
+
+</script>
+
+</body>
+</html>
