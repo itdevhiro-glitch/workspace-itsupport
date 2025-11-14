@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Zeppelin — User Dashboard</title>
-<link rel="icon" type="image/png" href="D:/Bima Adhitya/Ico/icov2.png" />
+<link rel="icon" type="image/png" href="icov2.png" />
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
@@ -331,7 +331,8 @@ const firebaseConfig = {
   storageBucket: "it-support-53eeb.firebasestorage.app",
   messagingSenderId: "573924501146",
   appId: "1:573924501146:web:12f34306ed675472322123",
-G-33K6DDE1VR"
+  /* (FIX 2) Error 'Unexpected token -' diperbaiki. 'measurementId:' ditambahkan kembali */
+  measurementId: "G-33K6DDE1VR"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -515,7 +516,8 @@ async function generateId() {
           console.log('Laporan saya dimuat dari Firebase.');
         }, (error) => {
           console.error("Firebase read failed:", error);
-          alert("Gagal mengambil data laporan Anda. Periksa rules/koneksi.");
+          /* Hapus alert agar tidak mengganggu, error sudah ada di console */
+          /* alert("Gagal mengambil data laporan Anda. Periksa rules/koneksi."); */
         });
         dbListenerActive = true;
       }
