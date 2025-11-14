@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Zeppelin — User Dashboard</title>
 <link rel="icon" type="image/png" href="D:/Bima Adhitya/Ico/icov2.png" />
-<!-- SDK FIREBASE (LENGKAP) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
@@ -31,7 +30,7 @@
   .app{max-width:1000px;margin:0 auto}
   header.app-header{
     display:flex; align-items:center; gap:16px; margin-bottom:24px; padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color); flex-wrap: wrap; /* (RESPONSIVE) */
   }
   .logo{
     width:48px; height:48px; border-radius:var(--radius);
@@ -58,12 +57,30 @@
   }
   h3 { font-size: 18px; font-weight: 700; margin-top: 0; margin-bottom: 16px; }
   .small{font-size:13px;color:var(--muted);font-weight:500;}
+
+  /* (BARU) Ringkasan UI Dashboard */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px; margin-bottom: 20px;
+  }
+  .summary-card {
+    padding: 16px !important; border-radius: var(--radius) !important;
+  }
+  .summary-card .small { font-weight: 600; }
+  .summary-card .count {
+    font-size: 24px !important; font-weight: 800 !important;
+    margin-top: 8px;
+  }
+  #summary-open .count { color: var(--warning); }
+  #summary-progress .count { color: var(--primary); }
+  #summary-closed .count { color: var(--success); }
+
   .table-wrap{overflow:auto}
   table{width:100%;border-collapse:collapse;min-width:600px}
   th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border-color);vertical-align: middle;}
   th{
     background:var(--bg); color:var(--muted); font-size:12px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.5px; position:relative; user-select:none;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
   .status{
     display:inline-block; padding: 4px 12px; border-radius:999px;
@@ -72,11 +89,17 @@
   .s-open{background:#fffbeb;color:#b45309}
   .s-progress{background:#e0f2fe;color:#0284c7}
   .s-closed{background:#dcfce7;color:#16a34a}
+  
+  /* (MODAL) */
   .modal-backdrop{
     position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none;
-    align-items:center; justify-content:center; z-index:9999;
+    align-items:center; justify-content:center; z-index:9999; padding: 16px; /* (RESPONSIVE) */
   }
-  .modal{ width:500px; background:var(--card); padding: 24px; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,0.35); }
+  .modal{ 
+    width:500px; max-width: 100%; /* (RESPONSIVE) */
+    background:var(--card); padding: 24px; border-radius:12px; 
+    box-shadow:0 12px 40px rgba(0,0,0,0.35); 
+  }
   input,select,textarea{
     width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color);
     background:var(--bg); color: var(--text); font-size:14px; font-family:'Inter', system-ui, Roboto, Arial;
@@ -86,13 +109,15 @@
   }
   textarea{min-height:120px;resize: vertical;}
   footer.small{ margin-top:32px; text-align:center; color:var(--muted); font-size:13px; }
+  
   /* (USER) STYLE LOGIN */
   #loginScreen {
     position: fixed; inset: 0; background: var(--bg); z-index: 10000;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: center; justify-content: center; padding: 16px; /* (RESPONSIVE) */
   }
   #loginBox {
-    width: 400px; max-width: 90%; background: var(--card); padding: 28px;
+    width: 400px; max-width: 100%; /* (RESPONSIVE) */
+    background: var(--card); padding: 28px;
     border-radius: var(--radius); border: 1px solid var(--border-color);
     box-shadow: var(--shadow-md);
   }
@@ -105,6 +130,79 @@
   #authError { color: var(--danger); font-size: 13px; text-align: center; margin-top: 10px; display: none; }
   #registerForm { display: none; }
   .app-content { display: none; }
+
+  /* (BARU) MEDIA QUERY RESPONSIVE */
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .app { padding: 0; }
+    
+    /* Header tumpuk */
+    .app-header { gap: 12px; }
+    .controls { 
+      margin-left: 0; width: 100%; 
+      justify-content: space-between; 
+      gap: 8px;
+    }
+    #userInfo { text-align: left; line-height: 1.4; }
+    #newReportBtn { 
+      padding: 9px 10px; 
+      width: 100%; /* (BARU) Tombol jadi full-width */
+      justify-content: center;
+      margin-top: 8px;
+    } 
+    #logoutBtn { position: absolute; top: 16px; right: 16px; } /* Pindah ke pojok */
+
+    /* (BARU) Tabel Responsif jadi Kartu */
+    .table-wrap { overflow: hidden; } /* Matikan scroll horizontal */
+    table { min-width: 0; }
+    table thead {
+      border: none; clip: rect(0 0 0 0);
+      height: 1px; margin: -1px; overflow: hidden;
+      padding: 0; position: absolute; width: 1px;
+    }
+    table tr {
+      display: block;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      padding: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+    table td {
+      display: block;
+      padding: 6px 0;
+      border-bottom: none;
+      font-size: 14px;
+    }
+    table td:not(:first-child) {
+        border-top: 1px dashed var(--border-color);
+        padding-top: 10px;
+        margin-top: 4px;
+    }
+    /* (BARU) Tambah label data */
+    table td:before {
+      content: attr(data-label);
+      display: block;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    /* Sembunyikan label untuk ID, taruh di atas */
+    table td[data-label="ID Laporan"] { padding-top: 0; }
+    table td[data-label="ID Laporan"]::before { display: none; }
+    table td[data-label="ID Laporan"] {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .status {
+        padding: 6px 14px;
+        width: 100%; /* (BARU) Status jadi full-width */
+        text-align: center;
+    }
+  }
 </style>
 </head>
 <body data-theme="light">
@@ -115,7 +213,6 @@
   </defs>
 </svg>
 
-<!-- (USER) LAYAR LOGIN/REGISTRASI -->
 <div id="loginScreen">
   <div id="loginBox">
     <form id="loginForm" onsubmit="return false;">
@@ -139,7 +236,6 @@
   </div>
 </div>
 
-<!-- (USER) KONTEN APLIKASI -->
 <div class="app app-content">
   <header class="app-header">
     <div class="logo">ZP</div>
@@ -147,20 +243,35 @@
     <div class="controls">
       <div id="userInfo" class="small" style="text-align: right;">
         Selamat datang,<br>
-        <strong id="userNameDisplay"></strong>
-      </div>
+        <strong id="userNameDisplay"></strong> </div>
       <button id="logoutBtn" class="btn ghost" title="Logout">Logout</button>
       <button id="newReportBtn" class="btn">
         <svg><use href="#icon-plus" /></svg>
-        Buat Laporan
+        Buat Laporan Baru
       </button>
     </div>
   </header>
 
   <main id="mainContent">
-    <div class="card">
-      <h3 class="section-title" style="margin:0;">Laporan Saya</h3>
-      <div class="table-wrap" style="margin-top:12px;">
+    
+    <h3>Ringkasan Laporan</h3>
+    <div class="summary-grid">
+      <div class="card summary-card" id="summary-open">
+        <div class="small">Open</div>
+        <div class="count" id="openCount">0</div>
+      </div>
+      <div class="card summary-card" id="summary-progress">
+        <div class="small">In Progress</div>
+        <div class="count" id="progressCount">0</div>
+      </div>
+      <div class="card summary-card" id="summary-closed">
+        <div class="small">Closed</div>
+        <div class="count" id="closedCount">0</div>
+      </div>
+    </div>
+    
+    <h3 class="section-title" style="margin-top: 24px;">Semua Laporan Saya</h3>
+    <div class="card" style="margin-top: 12px; padding: 12px;"> <div class="table-wrap">
         <table id="reportTable" aria-describedby="Daftar laporan saya">
           <thead>
             <tr>
@@ -172,8 +283,7 @@
             </tr>
           </thead>
           <tbody>
-             <!-- Diisi oleh JS -->
-          </tbody>
+             </tbody>
         </table>
       </div>
     </div>
@@ -181,15 +291,13 @@
   <footer class="small">Zeppelin IT Support — <span id="footerDate"></span></footer>
 </div>
 
-<!-- (USER) MODAL BUAT LAPORAN -->
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal" role="dialog" aria-modal="true">
     <h3 id="modalTitle">Buat Laporan Baru</h3>
     <form id="modalForm" onsubmit="return false;">
       <div>
         <label class="small">Nama Pelapor</label>
-        <input id="m_nama" required readonly> <!-- Diisi otomatis -->
-      </div>
+        <input id="m_nama" required readonly> </div>
       <div style="margin-top:10px">
         <label class="small">Jenis Masalah</label>
         <select id="m_jenis" required>
@@ -223,7 +331,7 @@ const firebaseConfig = {
   storageBucket: "it-support-53eeb.firebasestorage.app",
   messagingSenderId: "573924501146",
   appId: "1:573924501146:web:12f34306ed675472322123",
-  measurementId: "G-33K6DDE1VR"
+G-33K6DDE1VR"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -232,12 +340,12 @@ const db = firebase.database();
 const auth = firebase.auth();
 const reportsRef = db.ref('reports'); 
 const counterRef = db.ref('counter'); 
-const usersRef = db.ref('users'); // (BARU) Untuk simpan nama user
+const usersRef = db.ref('users'); // (PENTING) Untuk simpan nama user
 
 /* Cache & State */
 let myReportsCache = []; 
 let currentUser = null; 
-let currentUserData = {}; // (BARU) Untuk simpan nama, dll.
+let currentUserData = {}; // (PENTING) Untuk simpan nama, dll.
 let dbListenerActive = false; 
 
 /* Utilities */
@@ -246,7 +354,18 @@ function isoNow(){ return new Date().toISOString(); }
 
 function showToast(txt, t=2500){ const el = document.createElement('div'); el.className='card'; el.style.position='fixed'; el.style.right='18px'; el.style.bottom='18px'; el.style.padding='10px 12px'; el.style.zIndex=99999; el.style.background = 'var(--primary)'; el.style.color = '#fff'; el.textContent = txt; document.body.appendChild(el); setTimeout(()=>el.remove(),t); }
 
-/* (USER) Render Table (Hanya Laporan Sendiri) */
+/* (BARU) Render User Dashboard (Summary Cards) */
+function renderUserDashboard() {
+    const byStatus = {Open:0,Progress:0,Closed:0};
+    myReportsCache.forEach(r => {
+        byStatus[r.status] = (byStatus[r.status] || 0) + 1;
+    });
+    document.getElementById('openCount').textContent = byStatus.Open;
+    document.getElementById('progressCount').textContent = byStatus.Progress;
+    document.getElementById('closedCount').textContent = byStatus.Closed;
+}
+
+/* (DIUBAH) Render Table (Sekarang dengan data-label) */
 function renderTable(){
   const tbody = document.querySelector('#reportTable tbody');
   
@@ -261,14 +380,15 @@ function renderTable(){
   tbody.innerHTML = myReportsCache.map(r=>{
     const statusClass = r.status==='Open'?'s-open':(r.status==='Progress'?'s-progress':'s-closed');
     const created = r.created || '-';
+    const deskripsi = (r.catatan||'').substring(0, 100) + ((r.catatan||'').length > 100 ? '...' : '');
     
-    // User tidak perlu lihat PIC atau Kategori, hanya status
+    // (PENTING) Tambahkan "data-label" untuk mobile
     return `<tr>
-      <td>${r.id}</td>
-      <td>${r.jenis}</td>
-      <td>${(r.catatan||'').substring(0, 100)}${ (r.catatan||'').length > 100 ? '...' : ''}</td>
-      <td><span class="status ${statusClass}">${r.status}</span></td>
-      <td>${created}</td>
+      <td data-label="ID Laporan">${r.id}</td>
+      <td data-label="Jenis Masalah">${r.jenis}</td>
+      <td data-label="Deskripsi">${deskripsi}</td>
+      <td data-label="Status"><span class="status ${statusClass}">${r.status}</span></td>
+      <td data-label="Dibuat">${created}</td>
     </tr>`;
   }).join('');
 }
@@ -288,14 +408,14 @@ async function generateId() {
   }
 }
 
-/* (USER) Init */
+/* (DIUBAH) Init (Logika Nama User Sudah Ada) */
 (function init(){
   const footerDate = document.getElementById('footerDate');
   footerDate.textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric' });
 
   document.getElementById('newReportBtn').addEventListener('click', ()=>openModal());
   
-  /* (USER) KONTROL OTENTIKASI */
+  /* KONTROL OTENTIKASI */
   const loginScreen = document.getElementById('loginScreen');
   const appContent = document.querySelector('.app-content');
   const userNameDisplay = document.getElementById('userNameDisplay');
@@ -331,7 +451,7 @@ async function generateId() {
     }
   });
   
-  // Handle Registrasi
+  // Handle Registrasi (Sudah ada field Nama)
   document.getElementById('registerBtn').addEventListener('click', async () => {
     const email = document.getElementById('regEmail').value;
     const pass = document.getElementById('regPass').value;
@@ -348,7 +468,7 @@ async function generateId() {
 
     try {
       const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-      // (BARU) Simpan nama user di database
+      // (PENTING) Simpan nama user di database
       await usersRef.child(userCredential.user.uid).set({
           nama: name,
           email: email
@@ -364,34 +484,34 @@ async function generateId() {
     await auth.signOut();
   });
 
-  /* (USER) LISTENER OTENTIKASI */
+  /* (DIUBAH) LISTENER OTENTIKASI (Mengambil NAMA) */
   auth.onAuthStateChanged((user) => {
     if (user) {
       // User Telah Login
       currentUser = user;
       
-      // Ambil data nama user
+      // (PENTING) Ambil data nama user dari DB
       usersRef.child(user.uid).once('value').then(snapshot => {
           if (snapshot.exists()) {
               currentUserData = snapshot.val();
-              userNameDisplay.textContent = currentUserData.nama; // Tampilkan nama
+              userNameDisplay.textContent = currentUserData.nama; // Tampilkan NAMA
           } else {
-              userNameDisplay.textContent = user.email; // Fallback
+              userNameDisplay.textContent = user.email; // Fallback jika data nama tidak ada
           }
       });
       
       loginScreen.style.display = 'none'; 
       appContent.style.display = 'block'; 
       
-      // (USER) Mendengarkan HANYA laporan milik sendiri
+      // Mendengarkan HANYA laporan milik sendiri
       if (!dbListenerActive) {
-        // Query untuk laporan di mana 'uid' sama dengan uid user
         const myReportsQuery = reportsRef.orderByChild('uid').equalTo(user.uid);
         
         myReportsQuery.on('value', (snapshot) => {
           const dataObj = snapshot.val();
           myReportsCache = dataObj ? Object.keys(dataObj).map(key => ({ ...dataObj[key], id: key })) : [];
           renderTable(); // Render tabel user
+          renderUserDashboard(); // (BARU) Render summary card
           console.log('Laporan saya dimuat dari Firebase.');
         }, (error) => {
           console.error("Firebase read failed:", error);
@@ -408,23 +528,25 @@ async function generateId() {
       appContent.style.display = 'none'; 
 
       if (dbListenerActive) {
-        // Matikan listener spesifik tadi
-        const myReportsQuery = reportsRef.orderByChild('uid').equalTo(currentUser?.uid || 'invalid');
+        // Matikan listener (query harus sama persis)
+        const myReportsQuery = reportsRef.orderByChild('uid').equalTo(currentUser?.uid || 'invalid_uid_on_logout');
         myReportsQuery.off(); 
         dbListenerActive = false;
-        myReportsCache = []; 
+        myReportsCache = [];
+        renderTable(); // Kosongkan tabel
+        renderUserDashboard(); // (BARU) Kosongkan summary
       }
     }
   });
 })();
 
-/* (USER) MODAL BUAT LAPORAN */
+/* (DIUBAH) MODAL BUAT LAPORAN (Menggunakan NAMA) */
 const modalBackdrop = document.getElementById('modalBackdrop');
 const modalForm = document.getElementById('modalForm');
 
 function openModal(){
   modalForm.reset(); 
-  // Isi nama otomatis
+  // (PENTING) Isi nama otomatis dari data user
   document.getElementById('m_nama').value = currentUserData.nama || currentUser.email;
   modalBackdrop.style.display = 'flex';
 }
@@ -446,11 +568,12 @@ document.getElementById('modalSave').addEventListener('click', async (e)=>{
   
   const now = nowString();
   const iso = isoNow();
+  const userName = currentUserData.nama || currentUser.email; // (PENTING)
 
   const entry = {
     id: id,
     uid: currentUser.uid, // (WAJIB) ID Pemilik
-    nama: currentUserData.nama || currentUser.email, // (WAJIB) Nama Pemilik
+    nama: userName,       // (WAJIB) Nama Pemilik
     jenis: jenis,
     catatan: catatan,
     
@@ -465,7 +588,7 @@ document.getElementById('modalSave').addEventListener('click', async (e)=>{
     durationMs: null,
     durationText: '-',
     logs: [
-        { time: now, iso: iso, detail: `Laporan dibuat oleh ${currentUserData.nama}.` }
+        { time: now, iso: iso, detail: `Laporan dibuat oleh ${userName}.` }
     ]
   };
 
