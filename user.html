@@ -51,6 +51,20 @@
   .btn.ghost:hover{ background: var(--border-color); }
   .btn:not(.ghost){ box-shadow: var(--shadow-sm); }
   .btn svg{width:16px;height:16px;stroke-width:2.5}
+  
+  /* (BARU) Tombol urgent */
+  .btn.urgent {
+    background: transparent;
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .btn.urgent:hover {
+    background: var(--danger);
+    color: #fff;
+  }
+
   .card{
     background:var(--card); padding: 20px 24px; border-radius:var(--radius);
     box-shadow:var(--shadow-sm); border:1px solid var(--border-color);
@@ -202,6 +216,12 @@
         width: 100%; /* (BARU) Status jadi full-width */
         text-align: center;
     }
+    /* (BARU) Tombol urgent jadi full-width */
+    .btn.urgent {
+        width: 100%;
+        text-align: center;
+        padding: 8px;
+    }
   }
 </style>
 </head>
@@ -278,9 +298,9 @@
               <th>ID Laporan</th>
               <th>Jenis Masalah</th>
               <th>Deskripsi</th>
-              <th>Status</th>
+              <th>PIC</th> <th>Status</th>
               <th>Dibuat</th>
-            </tr>
+              <th>Aksi</th> </tr>
           </thead>
           <tbody>
              </tbody>
@@ -331,7 +351,7 @@ const firebaseConfig = {
   storageBucket: "it-support-53eeb.firebasestorage.app",
   messagingSenderId: "573924501146",
   appId: "1:573924501146:web:12f34306ed675472322123",
-  /* (FIX 2) Error 'Unexpected token -' diperbaiki. 'measurementId:' ditambahkan kembali */
+// (FIX 2) Error 'Unexpected token -' diperbaiki. 'measurementId:' ditambahkan kembali
   measurementId: "G-33K6DDE1VR"
 };
 
@@ -366,7 +386,7 @@ function renderUserDashboard() {
     document.getElementById('closedCount').textContent = byStatus.Closed;
 }
 
-/* (DIUBAH) Render Table (Sekarang dengan data-label) */
+/* (DIUBAH) Render Table (Menambahkan PIC dan Tombol Urgent) */
 function renderTable(){
   const tbody = document.querySelector('#reportTable tbody');
   
@@ -374,7 +394,8 @@ function renderTable(){
   myReportsCache.sort((a,b)=> new Date(b.created_iso) - new Date(a.created_iso));
   
   if (myReportsCache.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">Anda belum membuat laporan.</td></tr>`;
+      // (DIUBAH) Colspan jadi 7
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted); padding: 20px;">Anda belum membuat laporan.</td></tr>`;
       return;
   }
 
@@ -382,17 +403,59 @@ function renderTable(){
     const statusClass = r.status==='Open'?'s-open':(r.status==='Progress'?'s-progress':'s-closed');
     const created = r.created || '-';
     const deskripsi = (r.catatan||'').substring(0, 100) + ((r.catatan||'').length > 100 ? '...' : '');
+    const pic = r.pic || '...'; // (BARU) Ambil data PIC
+    
+    // (BARU) Tampilkan tombol urgent jika belum ditutup
+    const urgentButton = r.status !== 'Closed' 
+      ? `<button class="btn urgent" onclick="markUrgent('${r.id}')" title="Tandai sebagai urgent">🔥 Urgent</button>`
+      : '<span>-</span>';
     
     // (PENTING) Tambahkan "data-label" untuk mobile
     return `<tr>
       <td data-label="ID Laporan">${r.id}</td>
       <td data-label="Jenis Masalah">${r.jenis}</td>
       <td data-label="Deskripsi">${deskripsi}</td>
-      <td data-label="Status"><span class="status ${statusClass}">${r.status}</span></td>
+      <td data-label="PIC">${pic}</td> <td data-label="Status"><span class="status ${statusClass}">${r.status}</span></td>
       <td data-label="Dibuat">${created}</td>
-    </tr>`;
+      <td data-label="Aksi">${urgentButton}</td> </tr>`;
   }).join('');
 }
+
+/* (BARU) Fungsi untuk menandai tiket sebagai Urgent */
+async function markUrgent(id) {
+    if (!currentUser) { alert("Sesi Anda berakhir. Silakan login ulang."); return; }
+    
+    // Cek dulu dari cache
+    const report = myReportsCache.find(r => r.id === id);
+    if (report && report.urgent) {
+        alert('Laporan ini sudah ditandai sebagai urgent.');
+        return;
+    }
+
+    if (!confirm('Anda yakin ingin menandai laporan ini sebagai URGENT? Admin akan segera dinotifikasi.')) return;
+
+    const reportRef = reportsRef.child(id);
+    const now = nowString();
+    const iso = isoNow();
+    const userName = currentUserData.nama || currentUser.email;
+
+    try {
+        // Update status urgent
+        await reportRef.update({ urgent: true });
+        // Tambahkan log
+        await reportRef.child('logs').push({
+            time: now,
+            iso: iso,
+            detail: `🔥 USER (${userName}) MENANDAI SEBAGAI URGENT.`
+        });
+        showToast('Laporan ditandai sebagai Urgent! ✅');
+        // (Catatan: Listener 'on' akan otomatis memperbarui UI)
+    } catch (err) {
+        console.error("Gagal menandai urgent:", err);
+        alert("Gagal menandai urgent: " + err.message);
+    }
+}
+
 
 /* Generate ID (Sama) */
 async function generateId() {
@@ -445,6 +508,7 @@ async function generateId() {
   document.getElementById('loginBtn').addEventListener('click', async () => {
     const email = document.getElementById('loginEmail').value;
     const pass = document.getElementById('loginPass').value;
+    authError.style.display = 'none'; // (BARU) Sembunyikan error lama
     try {
       await auth.signInWithEmailAndPassword(email, pass);
     } catch (err) {
@@ -452,11 +516,12 @@ async function generateId() {
     }
   });
   
-  // Handle Registrasi (Sudah ada field Nama)
+  // (DIUBAH) Handle Registrasi (Menambahkan status 'pending')
   document.getElementById('registerBtn').addEventListener('click', async () => {
     const email = document.getElementById('regEmail').value;
     const pass = document.getElementById('regPass').value;
     const name = document.getElementById('regName').value;
+    authError.style.display = 'none'; // (BARU) Sembunyikan error lama
 
     if (!name) {
         showAuthError("Nama wajib diisi.");
@@ -469,12 +534,14 @@ async function generateId() {
 
     try {
       const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-      // (PENTING) Simpan nama user di database
+      // (DIUBAH) Simpan nama user di database dengan status 'pending'
       await usersRef.child(userCredential.user.uid).set({
           nama: name,
-          email: email
+          email: email,
+          status: 'pending' // <-- (BARU) Tambahkan status pending
       });
-      // Login otomatis ditangani oleh onAuthStateChanged
+      // Login otomatis akan ditangani oleh onAuthStateChanged
+      // dan akan menampilkan pesan 'pending'
     } catch (err) {
       showAuthError(err.message);
     }
@@ -485,45 +552,61 @@ async function generateId() {
     await auth.signOut();
   });
 
-  /* (DIUBAH) LISTENER OTENTIKASI (Mengambil NAMA) */
+  /* (DIUBAH) LISTENER OTENTIKASI (Mengambil NAMA + Cek Approval) */
   auth.onAuthStateChanged((user) => {
+    
     if (user) {
-      // User Telah Login
+      // User mencoba login, cek status approval
       currentUser = user;
       
-      // (PENTING) Ambil data nama user dari DB
       usersRef.child(user.uid).once('value').then(snapshot => {
-          if (snapshot.exists()) {
+          
+          if (snapshot.exists() && snapshot.val().status === 'approved') {
+              // === DISETUJUI ===
               currentUserData = snapshot.val();
-              userNameDisplay.textContent = currentUserData.nama; // Tampilkan NAMA
+              userNameDisplay.textContent = currentUserData.nama;
+              
+              loginScreen.style.display = 'none'; 
+              appContent.style.display = 'block'; 
+              
+              // Mendengarkan HANYA laporan milik sendiri
+              if (!dbListenerActive) {
+                const myReportsQuery = reportsRef.orderByChild('uid').equalTo(user.uid);
+                
+                myReportsQuery.on('value', (snapshot) => {
+                  const dataObj = snapshot.val();
+                  myReportsCache = dataObj ? Object.keys(dataObj).map(key => ({ ...dataObj[key], id: key })) : [];
+                  renderTable();
+                  renderUserDashboard();
+                  console.log('Laporan saya dimuat dari Firebase.');
+                }, (error) => {
+                  console.error("Firebase read failed:", error);
+                });
+                dbListenerActive = true;
+              }
+              
+          } else if (snapshot.exists() && snapshot.val().status === 'pending') {
+              // === PENDING ===
+              showAuthError("Akun Anda sedang menunggu persetujuan Admin.");
+              auth.signOut(); // Logout paksa
+          
+          } else if (snapshot.exists() && snapshot.val().status === 'rejected') {
+              // === DITOLAK ===
+              showAuthError("Akun Anda ditolak oleh Admin. Hubungi support.");
+              auth.signOut(); // Logout paksa
+          
           } else {
-              userNameDisplay.textContent = user.email; // Fallback jika data nama tidak ada
+              // === DATA TIDAK ADA / STATUS KOSONG ===
+              showAuthError("Data user tidak ditemukan/valid. Hubungi Admin.");
+              auth.signOut(); // Logout paksa
           }
+      }).catch(err => {
+          showAuthError("Gagal memverifikasi data user: " + err.message);
+          auth.signOut();
       });
       
-      loginScreen.style.display = 'none'; 
-      appContent.style.display = 'block'; 
-      
-      // Mendengarkan HANYA laporan milik sendiri
-      if (!dbListenerActive) {
-        const myReportsQuery = reportsRef.orderByChild('uid').equalTo(user.uid);
-        
-        myReportsQuery.on('value', (snapshot) => {
-          const dataObj = snapshot.val();
-          myReportsCache = dataObj ? Object.keys(dataObj).map(key => ({ ...dataObj[key], id: key })) : [];
-          renderTable(); // Render tabel user
-          renderUserDashboard(); // (BARU) Render summary card
-          console.log('Laporan saya dimuat dari Firebase.');
-        }, (error) => {
-          console.error("Firebase read failed:", error);
-          /* Hapus alert agar tidak mengganggu, error sudah ada di console */
-          /* alert("Gagal mengambil data laporan Anda. Periksa rules/koneksi."); */
-        });
-        dbListenerActive = true;
-      }
-      
     } else {
-      // User Telah Logout
+      // === USER LOGOUT ===
       currentUser = null;
       currentUserData = {};
       loginScreen.style.display = 'flex'; 
@@ -535,8 +618,8 @@ async function generateId() {
         myReportsQuery.off(); 
         dbListenerActive = false;
         myReportsCache = [];
-        renderTable(); // Kosongkan tabel
-        renderUserDashboard(); // (BARU) Kosongkan summary
+        renderTable();
+        renderUserDashboard();
       }
     }
   });
@@ -583,6 +666,8 @@ document.getElementById('modalSave').addEventListener('click', async (e)=>{
     pic: null,       // (Diisi Admin)
     kategori: null,  // (Diisi Admin)
     
+    urgent: false, // (BARU) Status urgent
+    
     created: now,
     created_iso: iso,
     updated: null,
@@ -604,6 +689,9 @@ document.getElementById('modalSave').addEventListener('click', async (e)=>{
     alert("Gagal mengirim laporan: " + err.message);
   }
 });
+
+// (BARU) Expose fungsi urgent ke global
+window.markUrgent = markUrgent;
 
 </script>
 
