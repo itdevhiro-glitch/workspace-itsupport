@@ -8,10 +8,10 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   
-  /* (DIUBAH) Variabel Tema disamakan dengan login.html */
+  /* (DISEMPURNAKAN) Variabel Tema Profesional (Netral) */
   :root{
-    --bg: #fef8f5; 
-    --card: #ffffff;
+    --bg: #f8f9fa; /* (BERUBAH) Dari peach/pink ke abu-abu sangat muda */
+    --card: #ffffff; /* (BERUBAH) Putih bersih */
     --muted: #6c757d;
     --text: #212529;
     --primary: #D9232D; /* Merah Zeppelin */
@@ -21,51 +21,73 @@
     --warning: #F37321; /* Oranye Zeppelin */
     --danger: #D9232D; /* Merah Zeppelin */
     --radius: 10px;
-    --border-color: #fbe0dd; /* Border warna merah muda */
+    --border-color: #e9ecef; /* (BERUBAH) Dari pink ke abu-abu muda netral */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
   }
   [data-theme="dark"]{
-    --bg:#221a1a;
-    --card:#312525;
-    --muted:#94a3b8;
-    --text:#f1f5f9;
-    --primary:#e54e58; /* Merah muda */
+    /* (DISEMPURNAKAN) Dark mode netral (bukan coklat/merah) */
+    --bg:#18181b; /* zinc-900 */
+    --card:#27272a; /* zinc-800 */
+    --muted:#a1a1aa; /* zinc-400 */
+    --text:#f4f4f5; /* zinc-100 */
+    --primary:#e54e58;
     --primary-hover:#d9232d;
-    --border-color: #523f3f;
+    --border-color: #3f3f46; /* zinc-700 */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
   }
   *{box-sizing:border-box}
   body{
     margin:0; font-family:'Inter', system-ui, Roboto, Arial, sans-serif; background:var(--bg);
     color:var(--text); padding:24px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    font-size: 15px; /* (BARU) Sedikit lebih besar untuk keterbacaan */
+    line-height: 1.5;
   }
   .app{max-width:1000px;margin:0 auto}
+  
+  /* (DISEMPURNAKAN) Header dengan shadow */
   header.app-header{
-    display:flex; align-items:center; gap:16px; margin-bottom:24px; padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color); flex-wrap: wrap; 
+    display:flex; align-items:center; gap:16px; margin-bottom:24px; 
+    padding: 16px 20px;
+    flex-wrap: wrap; 
+    background: var(--card); /* (BARU) Header kini memiliki latar belakang kartu */
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm); /* (BARU) Memberi 'lift' pada header */
   }
   .logo{
     width:48px; height:48px; border-radius:var(--radius);
     background:linear-gradient(135deg, var(--danger), var(--accent));
     display:flex; align-items:center; justify-content:center; color:#fff;
-    font-weight:800; font-size:18px;
+    font-weight:800; font-size:18px; flex-shrink: 0;
   }
+  .title{ flex-grow: 1; }
   .title .name{font-size:22px;font-weight:800}
   .title .tag{font-size:13px;color:var(--muted);font-weight:500;}
-  .controls{margin-left:auto;display:flex;gap:10px;align-items:center}
+  .controls{margin-left:auto;display:flex;gap:12px;align-items:center}
+  
+  /* (DISEMPURNAKAN) Button */
   .btn{
     background:var(--primary); color:#fff; border:none; padding:9px 14px; border-radius:8px;
     cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:6px;
-    font-size:14px; transition: background-color 0.2s ease; text-decoration: none; line-height: 1;
+    font-size:14px; transition: all 0.2s ease; 
+    text-decoration: none; line-height: 1.2;
+    white-space: nowrap;
   }
-  .btn:hover{ background: var(--primary-hover); }
-  .btn.ghost{ background:transparent; border:1px solid var(--border-color); color:var(--text); font-weight: 500; }
-  .btn.ghost:hover{ background: var(--border-color); }
+  .btn:hover{ background: var(--primary-hover); transform: translateY(-1px); }
   .btn:not(.ghost){ box-shadow: var(--shadow-sm); }
-  .btn svg{width:16px;height:16px;stroke-width:2.5}
+  .btn:active { transform: translateY(0); }
   
+  .btn.ghost{ 
+    background:transparent; border:1px solid var(--border-color); 
+    color:var(--text); font-weight: 500; box-shadow: none; 
+  }
+  .btn.ghost:hover{ background: var(--bg); transform: translateY(-1px); }
+  .btn svg{width:16px;height:16px;stroke-width:2.5}
+
   .btn.urgent {
     background: transparent;
     border: 1px solid var(--danger);
@@ -76,38 +98,73 @@
   .btn.urgent:hover {
     background: var(--danger);
     color: #fff;
+    transform: translateY(-1px);
   }
 
   .card{
     background:var(--card); padding: 20px 24px; border-radius:var(--radius);
     box-shadow:var(--shadow-sm); border:1px solid var(--border-color);
   }
-  h3 { font-size: 18px; font-weight: 700; margin-top: 0; margin-bottom: 16px; }
+  h3 { 
+    font-size: 18px; font-weight: 700; margin-top: 0; margin-bottom: 16px; 
+    color: var(--text);
+  }
   .small{font-size:13px;color:var(--muted);font-weight:500;}
 
   .summary-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* (BERUBAH) Sedikit lebih lebar */
     gap: 16px; margin-bottom: 20px;
   }
+  /* (BARU) Gaya Ikon di Summary Card */
   .summary-card {
     padding: 16px !important; border-radius: var(--radius) !important;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 14px;
   }
-  .summary-card .small { font-weight: 600; }
+  .summary-card .icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .summary-card .icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+  .summary-card .small { font-weight: 600; font-size: 14px; color: var(--muted); }
   .summary-card .count {
-    font-size: 24px !important; font-weight: 800 !important;
-    margin-top: 8px;
+    font-size: 26px !important; font-weight: 800 !important;
+    margin-top: 2px;
+    line-height: 1;
   }
-  #summary-open .count { color: var(--warning); } /* Oranye */
-  #summary-progress .count { color: #007bff; } /* Biru */
-  #summary-closed .count { color: var(--success); } /* Hijau */
+  
+  /* (BARU) Warna Ikon Summary Card */
+  #summary-open .icon { background: #fffbeb; color: var(--warning); }
+  #summary-open .count { color: var(--warning); }
+  #summary-progress .icon { background: #e0f2fe; color: #0284c7; }
+  #summary-progress .count { color: #0284c7; }
+  #summary-closed .icon { background: #dcfce7; color: var(--success); }
+  #summary-closed .count { color: var(--success); }
+
 
   .table-wrap{overflow:auto}
   table{width:100%;border-collapse:collapse;min-width:600px}
   th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border-color);vertical-align: middle;}
   th{
-    background:var(--bg); color:var(--muted); font-size:12px; font-weight: 600;
+    background: var(--bg); /* (BERUBAH) Menggunakan --bg agar kontras dengan --card */
+    color:var(--muted); font-size:12px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.5px;
   }
+  td { font-size: 14px; } /* (BARU) Konsistensi ukuran font */
+  
   .status{
     display:inline-block; padding: 4px 12px; border-radius:999px;
     font-weight:600; font-size:12px; line-height: 1.5;
@@ -119,26 +176,25 @@
   .modal-backdrop{
     position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none;
     align-items:center; justify-content:center; z-index:9999; padding: 16px; 
+    backdrop-filter: blur(5px); /* (BARU) Efek blur profesional */
   }
   .modal{ 
     width:500px; max-width: 100%; 
     background:var(--card); padding: 24px; border-radius:12px; 
-    box-shadow:0 12px 40px rgba(0,0,0,0.35); 
+    box-shadow: var(--shadow-lg); /* (BERUBAH) Shadow lebih dramatis */
+    border: 1px solid var(--border-color);
   }
   input,select,textarea{
     width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-color);
     background:var(--bg); color: var(--text); font-size:14px; font-family:'Inter', system-ui, Roboto, Arial;
+    transition: all 0.2s ease;
   }
   input:focus, select:focus, textarea:focus {
-    outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(217, 35, 45, 0.2);
+    outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(217, 35, 45, 0.15);
   }
   textarea{min-height:120px;resize: vertical;}
   footer.small{ margin-top:32px; text-align:center; color:var(--muted); font-size:13px; }
   
-  /* (BARU) HAPUS STYLE LOGIN */
-  /* #loginScreen { ... Dihapus ... } */
-  
-  /* (BARU) Loading Screen (seperti dashboard.html) */
   .loading-screen {
       position: fixed;
       top: 0;
@@ -169,17 +225,20 @@
       font-size: 1.1rem;
       font-weight: 300;
   }
-  /* (BARU) Sembunyikan konten aplikasi by default */
   .app-content { 
       display: none; 
   }
 
-  /* (MEDIA QUERY) */
+  /* (DISEMPURNAKAN) Media Query */
   @media (max-width: 768px) {
     body { padding: 16px; }
     .app { padding: 0; }
     
-    .app-header { gap: 12px; }
+    header.app-header {
+      padding: 12px;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+    }
     .controls { 
       margin-left: 0; width: 100%; 
       justify-content: space-between; 
@@ -191,8 +250,23 @@
       width: 100%; 
       justify-content: center;
       margin-top: 8px;
+      order: 4; /* (BERUBAH) Pindah ke paling bawah */
     } 
-    #logoutBtn { position: absolute; top: 16px; right: 16px; } 
+    .controls #userInfo { order: 1; }
+    /* (BARU) Atur urutan tombol di mobile */
+    .controls #dashboardBtn { order: 2; }
+    .controls #logoutBtn { order: 3; }
+    
+    /* (BARU) Pastikan tombol ikon pas ukurannya */
+    .controls #dashboardBtn, .controls #logoutBtn {
+        padding: 9px 10px;
+        margin-left: auto; /* Dorong 2 tombol ini ke kanan */
+    }
+    .controls #userInfo { margin-right: auto; } /* Dorong info ke kiri */
+    .controls #dashboardBtn { margin-left: 0; }
+    
+    .logo { width: 40px; height: 40px; }
+    .title .name { font-size: 20px; }
 
     .table-wrap { overflow: hidden; } 
     table { min-width: 0; }
@@ -258,18 +332,36 @@
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
+    <svg id="icon-grid" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+    
     <svg id="icon-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    
+    <svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+    <svg id="icon-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>
+    <svg id="icon-progress" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+    <svg id="icon-closed" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
   </defs>
 </svg>
 
-<div class="app app-content" id="app-content"> <header class="app-header">
+<div class="app app-content" id="app-content"> 
+  <header class="app-header">
     <div class="logo">ZP</div>
     <div class="title"><div class="name">Zeppelin</div><div class="tag">User Dashboard (IT Support)</div></div>
+    
     <div class="controls">
       <div id="userInfo" class="small" style="text-align: right;">
         Selamat datang,<br>
-        <strong id="userNameDisplay"></strong> </div>
-      <button id="logoutBtn" class="btn ghost" title="Logout">Logout</button>
+        <strong id="userNameDisplay"></strong> 
+      </div>
+      
+      <a href="https://itdevhiro-glitch.github.io/landpage/dashboard.html" id="dashboardBtn" class="btn ghost" title="Dashboard Utama">
+        <svg><use href="#icon-grid" /></svg>
+      </a>
+
+      <button id="logoutBtn" class="btn ghost" title="Logout">
+        <svg><use href="#icon-logout" /></svg>
+      </button>
+      
       <button id="newReportBtn" class="btn">
         <svg><use href="#icon-plus" /></svg>
         Buat Laporan Baru
@@ -282,16 +374,25 @@
     <h3>Ringkasan Laporan</h3>
     <div class="summary-grid">
       <div class="card summary-card" id="summary-open">
-        <div class="small">Open</div>
-        <div class="count" id="openCount">0</div>
+        <div class="icon"><svg><use href="#icon-open" /></svg></div>
+        <div class="info">
+          <div class="small">Open</div>
+          <div class="count" id="openCount">0</div>
+        </div>
       </div>
       <div class="card summary-card" id="summary-progress">
-        <div class="small">In Progress</div>
-        <div class="count" id="progressCount">0</div>
+        <div class="icon"><svg><use href="#icon-progress" /></svg></div>
+        <div class="info">
+          <div class="small">In Progress</div>
+          <div class="count" id="progressCount">0</div>
+        </div>
       </div>
       <div class="card summary-card" id="summary-closed">
-        <div class="small">Closed</div>
-        <div class="count" id="closedCount">0</div>
+        <div class="icon"><svg><use href="#icon-closed" /></svg></div>
+        <div class="info">
+          <div class="small">Closed</div>
+          <div class="count" id="closedCount">0</div>
+        </div>
       </div>
     </div>
     
@@ -376,8 +477,8 @@ const firebaseConfig = {
   projectId: "it-support-53eeb",
   storageBucket: "it-support-53eeb.firebasestorage.app",
   messagingSenderId: "573924501146",
-  appId: "1:573924501146:web:12f34306ed675472322123",
-  measurementId: "G-33K6DDE1VR"
+  appId: "1:573924501146:web:12f34306ed675472322123",
+  measurementId: "G-33K6DDE1VR" // <-- Saya tambahkan measurementId yang sepertinya terhapus
 };
 
 // Inisialisasi Firebase
@@ -583,11 +684,24 @@ async function generateId() {
 }
 
 /* (DIUBAH) Init (Tanpa Auth, hanya event listener) */
+/* (DIUBAH) Init (Tanpa Auth, hanya event listener) */
 (function init(){
   document.getElementById('footerDate').textContent = new Date().toLocaleDateString('id-ID', { year: 'numeric' });
   document.getElementById('newReportBtn').addEventListener('click', ()=>openModal());
+  
+  // (DISEMPURNAKAN) Logout
   document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await signOut(auth); // (v10)
+    if (!confirm('Anda yakin ingin logout?')) return; // Konfirmasi
+    try {
+        await signOut(auth); // (v10)
+        
+        // (PERBAIKAN) Mengarahkan ke URL logout yang benar
+        window.location.href = 'https://itdevhiro-glitch.github.io/landpage/login'; 
+        
+    } catch (error) {
+        console.error("Logout failed:", error);
+        alert("Gagal logout: " + error.message);
+    }
   });
 })();
 
@@ -642,7 +756,7 @@ document.getElementById('modalSave').addEventListener('click', async (e)=>{
   };
 
   try {
-    const specificReportRef = ref(db, 'reports/' + id); // (v10)
+    const specificReportRef = ref(db, 'reports/' + id); // (v1DITOLAK10)
     await set(specificReportRef, entry); // (v10)
     showToast('Laporan baru berhasil dikirim ✅');
     modalBackdrop.style.display='none';
